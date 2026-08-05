@@ -28,7 +28,7 @@ public partial class App : System.Windows.Application
             e.Exception.Message,
             e.Exception);
 
-        MessageBox.Show(
+System.Windows.MessageBox.Show(
             "Une erreur inattendue est survenue.\n\n" +
             e.Exception.Message +
             "\n\nLe détail est disponible dans l'onglet Diagnostic.",
