@@ -53,7 +53,7 @@ public sealed class DiagnosticStore
             path,
             exception);
 
-        var dispatcher = Application.Current?.Dispatcher;
+var dispatcher = System.Windows.Application.Current?.Dispatcher;
 
         if (dispatcher is null || dispatcher.CheckAccess())
         {
