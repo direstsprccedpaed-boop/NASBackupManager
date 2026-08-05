@@ -76,7 +76,7 @@ public sealed record DiagnosticEntry(
     string? Path = null,
     Exception? Exception = null);
 
-public sealed class CopyOperation : ObservableObject
+public sealed partial class CopyOperation : ObservableObject
 {
     public required MediaFile Item { get; init; }
 
