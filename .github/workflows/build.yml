@@ -1,63 +1,36 @@
-name: Build Android APK (Curseur PR)
+name: Build NAS Backup Manager
 
 on:
   push:
-    branches: [ main ]
-  workflow_dispatch: {}
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
 
 jobs:
   build:
-    name: Build debug APK via Capacitor
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
-      - name: Checkout du dépôt
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Installer Node.js
-        uses: actions/setup-node@v4
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
         with:
-          node-version: '20'
+          dotnet-version: 8.0.x
 
-      - name: Installer Java 17 (requis par Gradle/Android)
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
+      - name: Restore dependencies
+        run: dotnet restore
 
-      - name: Installer le SDK Android
-        uses: android-actions/setup-android@v3
+      - name: Build Release
+        run: dotnet build --configuration Release --no-restore
 
-      - name: Accepter les licences du SDK Android
-        run: yes | sdkmanager --licenses || true
+      - name: Publish single file
+        run: dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o ./publish
 
-      - name: Installer les dépendances npm
-        run: npm install
-
-      - name: Ajouter la plateforme Android (génère le dossier android/)
-        run: npx cap add android
-
-      - name: Générer les icônes Android depuis assets/icon.png
-        run: npx @capacitor/assets generate --android
-        continue-on-error: true
-        # continue-on-error : si assets/icon.png est absent (premier build
-        # avant ajout du logo), l'icône par défaut de Capacitor est conservée
-        # au lieu de faire échouer tout le pipeline.
-
-      - name: Synchroniser les assets web vers le projet natif
-        run: npx cap sync android
-
-      - name: Rendre gradlew exécutable
-        run: chmod +x android/gradlew
-
-      - name: Builder l'APK debug
-        working-directory: android
-        run: ./gradlew assembleDebug --no-daemon
-
-      - name: Récupérer l'APK généré
+      - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: curseur-pr-debug-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
-          if-no-files-found: error
-          retention-days: 30
+          name: NasBackupManager-Release
+          path: publish/
